@@ -172,6 +172,7 @@ let preQuestions =
         }];
 
 let next = document.querySelector('.next');
+let previous = document.querySelector('.previous')
 
 let question = document.querySelector('.question');
 let answers = document.querySelectorAll('.list-group-item');
@@ -180,9 +181,30 @@ let pointsElem = document.querySelector('.score');
 let restart = document.querySelector('.restart');
 let index = 0;
 let points = 0;
+localStorage.setItem("klucz", 0);
+localStorage.setItem("liczba", 0);
 
-for (let i = 0; i < answers.length; i++) {
-    answers[i].addEventListener('click', doAction);
+index = 0;
+setQuestion(index);
+
+function setQuestion(index) {
+	question.innerHTML = preQuestions[index].question;
+
+    answers[0].innerHTML = preQuestions[index].answers[0];
+	answers[1].innerHTML = preQuestions[index].answers[1];
+	answers[2].innerHTML = preQuestions[index].answers[2];
+	answers[3].innerHTML = preQuestions[index].answers[3];
+
+   if (preQuestions[index].answers.length === 2) {
+       answers[2].style.display = 'none';
+       answers[3].style.display = 'none';
+   } else {
+       answers[2].style.display = 'block';
+       answers[3].style.display = 'block';
+   }
+
+	activateAnswers();
+    cleanAnswers();
 }
 
 function doAction(event) {
@@ -198,9 +220,37 @@ function doAction(event) {
     disableAnswers();
 }
 
+function activateAnswers(){
+	for (let i=0; i<answers.length; i++){
+		answers[i].addEventListener('click', doAction);
+	}
+}
+
+function disableAnswers(){
+	for (let i=0; i<answers.length; i++){
+		answers[i].removeEventListener('click', doAction);
+	}
+}
+
+function cleanAnswers(){
+	for (let i=0; i<answers.length; i++){
+		answers[i].classList.remove('correct');
+		answers[i].classList.remove('incorrect');
+	}
+}
+
+function markCorrect(elem){
+	elem.classList.add('correct');
+}
+
+function markInCorrect(elem){
+	elem.classList.add('incorrect')
+}
 
 
 restart.addEventListener('click', function (event) {
+	console.log('RESTART button clicked');
+
     event.preventDefault();
 
     index = 0;
@@ -209,6 +259,45 @@ restart.addEventListener('click', function (event) {
     userScorePoint.innerHTML = points;
     setQuestion(index);
     activateAnswers();
-    list.style.display = 'block';
+
+
+	list.style.display = 'block';
     results.style.display = 'none';
+});
+
+next.addEventListener('click', function () {
+	index++;
+	if (index >= preQuestions.length){
+		list.style.display = 'none';
+		results.style.display = 'block';
+		userScorePoint.innerHTML = points;
+		let game = localStorage.getItem('game');
+		let average;
+
+		if (game != null){
+			average = localStorage.getItem('average');
+			average = (average * game + points) / ++game;
+		}else{
+			game = 1;
+			average = points;
+		}
+		localStorage.setItem('games', game);
+		localStorage.setItem('average', average);
+		averageScore.innerHTML = average;
+	} else{
+		setQuestion(index);
+		activateAnswers();
+	}
+});
+
+previous.addEventListener('click', function () {
+   index--;
+   if (index >= preQuestions.length) {
+       list.style.display = 'none';
+       results.style.display = 'block';
+       userScorePoint.innerHTML = points;
+   } else {
+       setQuestion(index);
+       activateAnswers();
+   }
 });
